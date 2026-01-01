@@ -24,7 +24,6 @@ void main ()
         color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
     #else
         color = texelFetch(colortex10, ivec2(gl_FragCoord.xy), 0);
-
         color.rgb = mix(vec3(luminance(color.rgb)), color.rgb, SATURATION);
 
         vec4 sharpen = vec4(0.0);
@@ -38,7 +37,7 @@ void main ()
         }
 
         #ifdef DYNAMIC_EXPOSURE
-            float exposure = 8.0 * exp(0.005 / clamp(renderState.globalLuminance, 0.002, 0.015));
+            float exposure = 8.0 * exp(0.005 / clamp(renderState.globalLuminance, 0.002, 0.02));
         #else
             float exposure = MANUAL_EXPOSURE;
         #endif

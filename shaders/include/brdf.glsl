@@ -6,13 +6,6 @@
         return F0 + (1.0 - F0) * pow(1.0 - theta, 5.0);
     }
 
-    float getSpecularProbability (vec3 albedo, vec3 F0, float theta)
-    {
-        float fresnelLum = luminance(schlickFresnel(F0, theta));
-        float totalLum = luminance(albedo) * (1.0 - fresnelLum) + fresnelLum;
-        return fresnelLum / totalLum;
-    }
-
     vec3 evalCookBRDF (
         vec3 w0, 
         vec3 w1, 

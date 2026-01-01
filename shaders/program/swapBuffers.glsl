@@ -7,6 +7,14 @@
 #include "/include/textureSampling.glsl"
 #include "/include/text.glsl"
 
+#ifdef FULL_RES
+    #ifdef TAA
+        #define READ_FROM colortex6
+    #else
+        #define READ_FROM colortex7
+    #endif
+#endif
+
 layout (rgba16f) uniform image2D SWAP_TO;
 layout (local_size_x = 8, local_size_y = 8) in;
 
