@@ -39,24 +39,34 @@
         float dither = blueNoise(gl_FragCoord.xy).r;
         
         vec4 currData = texelFetch(colortex2, texel, 0);
-        vec3 currNormal = octDecode(unpack4x8(texelFetch(colortex9, texel, 0).r).zw);
-        vec3 currGeoNormal = octDecode(unpack4x8(texelFetch(colortex9, texel, 0).r).xy);
+        uint normalData = texelFetch(colortex9, texel, 0).r;
+        vec3 currNormal = octDecode(unpackExp4x8(normalData).zw);
+        vec3 currGeoNormal = octDecode(unpackExp4x8(normalData).xy);
         vec4 currPos = screenToPlayerPos(vec3((texel + 0.5) * texelSize, depth));
 
 		vec2 sampleDir = kernel[FILTER_PASS];
-        float temporalWeight = isnan(currData.w) ? 0.0 : clamp(currData.w, 0.0, 32.0);
+        float temporalWeight = (isnan(currData.w) ? 0.01 : clamp(currData.w, 0.01, 32.0)) * sqrt(DIFFUSE_SAMPLES);
         vec4 samples = vec4(0.0);
         float weights = 0.0;
 
-        vec2 samplePos = gl_FragCoord.xy + (dither - 1.5) * sampleDir;
-        for (int i = 0; i < 3; i++, samplePos += sampleDir) {
+        #if FILTER_PASS < 4 
+            vec2 samplePos = gl_FragCoord.xy + (1.5 * dither - 1.5) * sampleDir;
+            for (int i = 0; i < 2; i++, samplePos += sampleDir * 1.5) 
+        #elif FILTER_PASS < 7
+            vec2 samplePos = gl_FragCoord.xy + (dither - 1.5) * sampleDir;
+            for (int i = 0; i < 3; i++, samplePos += sampleDir) 
+        #else
+            vec2 samplePos = gl_FragCoord.xy + (0.6 * dither - 1.5) * sampleDir;
+            for (int i = 0; i < 5; i++, samplePos += sampleDir * 0.6) 
+        #endif
+        {
             ivec2 sampleCoord = ivec2(samplePos);
 
             if (clamp(sampleCoord, ivec2(0), ivec2(renderSize) - 1) == sampleCoord) {
                 vec4 sampleData = texelFetch(colortex2, sampleCoord, 0);
 
                 if (!any(isnan(sampleData))) {
-                    vec3 sampleNormal = octDecode(unpack4x8(texelFetch(colortex9, sampleCoord, 0).r).zw);
+                    vec3 sampleNormal = octDecode(unpackExp4x8(texelFetch(colortex9, sampleCoord, 0).r).zw);
                     vec3 posDiff = currPos.xyz - screenToPlayerPos(vec3((sampleCoord + 0.5) * texelSize, texelFetch(depthtex1, sampleCoord, 0).x)).xyz;
 
                     float sampleWeight = exp(-temporalWeight * (
@@ -72,6 +82,6 @@
             }
         }
 
-        if (weights > 0.001) filteredData = samples / weights;
+        if (weights > (0.00016 * temporalWeight)) filteredData = samples / weights;
         else filteredData = currData;
     }

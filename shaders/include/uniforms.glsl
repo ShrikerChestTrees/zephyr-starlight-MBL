@@ -13,6 +13,7 @@
     uniform sampler2D shadowtex1;
     uniform sampler2D shadowtex0;
     
+    uniform sampler2D colortex13;
     uniform sampler2D colortex12;
     uniform sampler2D colortex11;
     uniform sampler2D colortex10;
@@ -32,6 +33,7 @@
 
     uniform mat4 gbufferModelViewInverse;
     uniform mat4 shadowModelViewInverse;
+    uniform mat4 gbufferProjection;
     uniform mat4 gbufferModelView;
 
     uniform vec4 gbufferPreviousModelViewProjection0;
@@ -61,9 +63,11 @@
     uniform vec2 taaOffset;
     uniform vec2 texelSize;
 
+    uniform float centerDepthSmooth;
     uniform float lightBrightness;
     uniform float rainStrength;
     uniform float eyeAltitude;
+    uniform float aspectRatio;
     uniform float viewHeight;
     uniform float frameRate;
     uniform float viewWidth;
@@ -85,5 +89,7 @@
     #define gbufferPreviousModelViewProjection3x4 mat3x4(gbufferPreviousModelViewProjection0, gbufferPreviousModelViewProjection1, gbufferPreviousModelViewProjection2)
     #define gbufferModelViewProjectionInverse3x4 mat3x4(gbufferModelViewProjectionInverse0, gbufferModelViewProjectionInverse1, gbufferModelViewProjectionInverse2)
     #define gbufferModelViewProjection3x4 mat3x4(gbufferModelViewProjection0, gbufferModelViewProjection1, gbufferModelViewProjection2)
+
+    #define gbufferModelViewProjection3x2 mat3x2(gbufferModelViewProjection0.zw, gbufferModelViewProjection1.zw, gbufferModelViewProjection2.zw)
 
 #endif

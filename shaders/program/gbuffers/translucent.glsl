@@ -1,13 +1,9 @@
-#ifdef fsh
-
 #include "/include/uniforms.glsl"
 #include "/include/config.glsl"
 #include "/include/constants.glsl"
 #include "/include/common.glsl"
-#include "/include/pbr.glsl"
-#include "/include/main.glsl"
-#include "/include/raytracing.glsl"
-#include "/include/textureData.glsl"
+
+#ifdef fsh
 
 in VSOUT 
 {
@@ -33,11 +29,6 @@ void main ()
 #ifdef vsh
 
 attribute vec2 mc_Entity;
-
-#include "/include/uniforms.glsl"
-#include "/include/config.glsl"
-#include "/include/constants.glsl"
-#include "/include/common.glsl"
 
 out VSOUT 
 {

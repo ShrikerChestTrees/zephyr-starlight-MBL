@@ -10,38 +10,54 @@
 
 #include "/include/text.glsl"
 
-/* RENDERTARGETS: 4 */
+/* RENDERTARGETS: 4,13 */
 layout (location = 0) out vec4 filteredData;
+layout (location = 1) out vec4 virtualDepth;
 
 void main ()
 {   
     uint state = (uint(gl_FragCoord.x) >> 1) + (uint(gl_FragCoord.y) >> 1) * uint(viewWidth / 2.0) + uint(viewWidth / 2.0) * uint(viewHeight / 2.0) * (frameCounter & 1023u);
     ivec2 offset = checkerOffsets2x2[frameCounter & 3];
+    ivec2 srcTexel = ivec2(gl_FragCoord.xy) >> 1;
 
     float depth = texelFetch(depthtex1, ivec2(gl_FragCoord.xy), 0).r;
     filteredData = vec4(0.0, 0.0, 0.0, 1.0);
+    virtualDepth = vec4(1.0, 0.0, 0.0, 1.0);
 
     if (depth == 1.0) return;
 
-    vec4 playerPos = gbufferModelViewProjectionInverse * vec4(vec3(gl_FragCoord.xy * texelSize, depth) * 2.0 - 1.0 - vec3(taaOffset, 0.0), 1.0);
-    playerPos.xyz /= playerPos.w;
+    vec4 playerPos = screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, depth));
     playerPos.xyz += cameraVelocity;
 
     DeferredMaterial mat = unpackMaterialData(ivec2(gl_FragCoord.xy));
 
-    if (mat.roughness > REFLECTION_ROUGHNESS_THRESHOLD) return;
-
     if ((ivec2(gl_FragCoord.xy) & 1) == ivec2(offset)) 
     {
-        filteredData = texelFetch(colortex2, ivec2(gl_FragCoord.xy) >> 1, 0);
+        filteredData = texelFetch(colortex2, srcTexel, 0);
     }
     else
     {
-        filteredData = vec4(0.0, 0.0, 0.0, texelFetch(colortex2, ivec2(gl_FragCoord.xy) >> 1, 0).w);
+        filteredData = vec4(0.0, 0.0, 0.0, texelFetch(colortex2, srcTexel, 0).w);
     }
 
-    vec4 prevUv = gbufferPreviousModelViewProjection * vec4(playerPos.xyz + normalize(playerPos.xyz - cameraVelocity - screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, 0.0)).xyz) * filteredData.w, 1.0);
-    prevUv.xyz = (prevUv.xyz / prevUv.w + vec3(taaOffsetPrev, 0.0)) * 0.5 + 0.5;
+    vec3 virtualPos = playerPos.xyz + normalize(playerPos.xyz - cameraVelocity - screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, 0.0)).xyz) * filteredData.w;
+    virtualDepth.r = mat.roughness < 0.003 ? playerToScreenPos(virtualPos).z : depth;
+
+    if (mat.roughness > REFLECTION_ROUGHNESS_THRESHOLD) return;
+
+    vec3 colorMax = vec3(0.0);
+
+    if (mat.roughness < 0.003) {
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                colorMax = max(texelFetch(colortex2, srcTexel + ivec2(x, y), 0).rgb, colorMax);
+            }   
+        }
+    } else {
+        colorMax = vec3(1024.0);
+    }
+
+    vec4 prevUv = projectAndDivide(gbufferPreviousModelViewProjection, virtualPos) * 0.5 + 0.5;
 
     vec4 lastFrame;
 
@@ -54,8 +70,8 @@ void main ()
         lastFrame = vec4(0.0, 0.0, 0.0, 1.0);
     }
 
-     if (any(isnan(lastFrame))) lastFrame = vec4(0.0, 0.0, 0.0, 1.0);
-     
-    filteredData.rgb = mix(lastFrame.rgb, filteredData.rgb, rcp(lastFrame.w));
+    if (any(isnan(lastFrame))) lastFrame = vec4(0.0, 0.0, 0.0, 1.0);
+
+    filteredData.rgb = mix(min(lastFrame.rgb, colorMax), filteredData.rgb, rcp(lastFrame.w));
     filteredData.w = min(lastFrame.w + 1.0, (filteredData.w > (REFLECTION_MAX_RT_DISTANCE / 2.0) || mat.roughness < 0.003) ? min(4, PT_REFLECTION_ACCUMULATION_LIMIT) : PT_REFLECTION_ACCUMULATION_LIMIT);
 }

@@ -10,12 +10,12 @@
 layout (local_size_x = 256) in;
 const ivec3 workGroups = ivec3(1, 1, 1);
 
-shared float averageExposure[512];
+shared float averageLuminance[512];
 
 void main ()
 {
     for (int i = 0; i < 2; i++) {
-        averageExposure[gl_LocalInvocationID.x * 2 + i] = clamp(luminance(texelFetch(colortex10, ivec2(screenSize * R2(512 * (frameCounter & 7) + 2 * gl_LocalInvocationID.x + i)), 0).rgb), 0.001, 0.04);
+        averageLuminance[gl_LocalInvocationID.x * 2 + i] = clamp(luminance(texelFetch(colortex10, ivec2(screenSize * R2(512 * (frameCounter & 7) + 2 * gl_LocalInvocationID.x + i)), 0).rgb), 0.002, 0.03);
     }
 
     barrier();
@@ -24,10 +24,10 @@ void main ()
         uint index = ((2 * gl_LocalInvocationID.x) & ~((1 << (i + 1)) - 1)) + (1 << i) - 1;
         uint offset = 1 + (gl_LocalInvocationID.x & ((1 << i) - 1));
 
-        averageExposure[index + offset] += averageExposure[index];
+        averageLuminance[index + offset] += averageLuminance[index];
 
         barrier();
     }
 
-    if (gl_LocalInvocationID.x == 0) renderState.globalLuminance = mix(renderState.globalLuminance, clamp(averageExposure[511] / 512.0, 0.0015, 0.025), ADAPTATION_SPEED);
+    if (gl_LocalInvocationID.x == 0) renderState.globalLuminance = mix(renderState.globalLuminance, averageLuminance[511] / 512.0, ADAPTATION_SPEED);
 }

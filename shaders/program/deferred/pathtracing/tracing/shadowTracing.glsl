@@ -40,11 +40,10 @@ void main ()
 
     if (dot(mat.geoNormal, shadowDir) > 0.0) {
         vec2 uv = (vec2(texel) + 0.5) * texelSize;
-        vec4 playerPos = projectAndDivide(gbufferModelViewProjectionInverse, vec3(uv, depth) * 2.0 - 1.0 - vec3(taaOffset, 0.0));
-
+        
         Ray shadowRay;
 
-        shadowRay.origin = playerPos.xyz + mat.geoNormal * 0.005;
+        shadowRay.origin = screenToPlayerPos(vec3(uv, depth)).xyz + mat.geoNormal * 0.005;
         vec3 shadowMask = vec3(0.0);
 
         for (int i = 0; i < SHADOW_SAMPLES; i++) {

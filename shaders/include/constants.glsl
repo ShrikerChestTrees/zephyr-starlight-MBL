@@ -11,6 +11,8 @@
     const float sunPathRotation = -60.0; // [-60.0 -55.0 -50.0 -45.0 -40.0 -35.0 -30.0 -25.0 -20.0 -15.0 -10.0 -5.0 0.0 5.0 10.0 15.0 20.0 25.0 30.0 35.0 40.0 45.0 50.0 55.0 60.0]
     const float shadowDistance = VOXELIZATION_DISTANCE;
 
+    const float centerDepthHalflife = 2.0;
+
     const float lineWidth = 1.0;
     const float handScale = cos(radians(HAND_FOV) / 2.0) / sin(radians(HAND_FOV) / 2.0);
 
@@ -31,21 +33,24 @@
         const int colortex7Format = R11F_G11F_B10F; // scene
         const int colortex8Format = RG32UI; // material data 0
         const int colortex9Format = RG32UI; // material data 1
-        const int colortex10Format = R11F_G11F_B10F; // sun/moon geometry (gbuffers -> deferred), post-processing data (composite)
+        const int colortex10Format = RGBA16F; // sun/moon geometry (gbuffers -> deferred), post-processing data (composite)
         const int colortex11Format = RGBA16F;
-        const int colortex12Format = RGBA16F;
+        const int colortex12Format = RGBA16F; // filtered diffuse lighting
+        const int colortex13Format = R32F; // reflection virtual depth buffer for TAA
 
         const int shadowcolor0Format = R8;
         const int shadowcolor1Format = R8;
 
         const vec4 colortex6ClearColor = vec4(0.0, 0.0, 0.0, 0.0)
         const vec4 colortex7ClearColor = vec4(0.0, 0.0, 0.0, 0.0)
+        const vec4 colortex13ClearColor = vec4(1.0, 0.0, 0.0, 1.0)
 
         const bool shadowtex0Nearest = true;
         const bool shadowtex1Nearest = true;
 
         const bool colortex0Clear = false;
         const bool colortex1Clear = false;
+        const bool colortex2Clear = false;
         const bool colortex3Clear = false;
         const bool colortex4Clear = false;
         const bool colortex5Clear = false;
@@ -56,6 +61,7 @@
         const bool colortex10Clear = true;
         const bool colortex11Clear = false;
         const bool colortex12Clear = false;
+        const bool colortex13Clear = true;
     */
 
 #endif

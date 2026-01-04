@@ -23,8 +23,8 @@
 
     vec3 randomDirBlueNoise (ivec2 pixel, int i)
     {
-        float a0 = heitzSample(pixel, frameCounter, 2 * i) * 2.0 - 1.0;
-        float a1 = heitzSample(pixel, frameCounter, 2 * i + 1) * TWO_PI;
+        float a0 = heitzSample(pixel, DIFFUSE_SAMPLES * frameCounter + i, 0) * 2.0 - 1.0;
+        float a1 = heitzSample(pixel, DIFFUSE_SAMPLES * frameCounter + i, 1) * TWO_PI;
 
         float t = sqrt(1.0 - a0 * a0);
 

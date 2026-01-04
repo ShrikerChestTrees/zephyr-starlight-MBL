@@ -47,6 +47,14 @@
         return IRCResult(vec3(0.0), vec3(0.0));
     }
 
+    IRCResult irradianceCacheSmooth (vec3 pos, vec3 normal, uint rank, vec2 rand)
+    {
+        float theta = TWO_PI * rand.x;
+        vec3 dir = tbnNormal(normal) * vec3((1.0 - sqrt(1.0 - sqrt(rand.y))) * vec2(sin(theta), cos(theta)), 0.0);
+
+        return irradianceCache(pos + dir * min1(TraceRay(Ray(pos + normal * 0.003, dir), 1.0, false, false).dist - 0.001), normal, rank);
+    }
+
     IRCResult readIRC (vec3 pos, vec3 normal)
     {   
         ivec3 voxelPos = cameraPositionInt + ivec3(floor(pos + cameraPositionFract + normal * 0.475));

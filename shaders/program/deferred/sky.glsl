@@ -5,7 +5,6 @@
 #include "/include/pbr.glsl"
 #include "/include/main.glsl"
 #include "/include/textureSampling.glsl"
-#include "/include/ircache.glsl"
 #include "/include/atmosphere.glsl"
 #include "/include/brdf.glsl"
 #include "/include/spaceConversion.glsl"

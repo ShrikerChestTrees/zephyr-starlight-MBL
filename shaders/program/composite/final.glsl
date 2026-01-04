@@ -42,15 +42,4 @@ void main ()
         color.rgb = mix(pow(1.0 - exp(-exposure * color.rgb), vec3(1.0 / 2.2)), pow(1.0 - exp(-exposure * sharpen.rgb / sharpen.w), vec3(1.0 / 2.2)), -SHARPENING) + blueNoise(gl_FragCoord.xy) * rcp(255.0) - rcp(510.0);
         color.a = 1.0;
     #endif
-/*
-    #define FONT_SIZE 2 // [1 2 3 4 5 6 7 8]
-	
-	beginText(ivec2(gl_FragCoord.xy / FONT_SIZE), ivec2(20, viewHeight / FONT_SIZE - 20));
-	text.fgCol = vec4(vec3(1.0), 1.0);
-	text.bgCol = vec4(vec3(0.0), 0.0);
-	
-    printIvec3(imageSize(voxelBufferLod));
-
-	endText(color.rgb);
-*/
 }

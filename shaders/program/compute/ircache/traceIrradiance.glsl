@@ -105,7 +105,7 @@ void main ()
     vec3 playerPos = vec3(voxelPos - cameraPositionInt) - cameraPositionFract + 2.0 * (vec3(uvec3(voxel.traceOrigin >> 24u, voxel.traceOrigin >> 16u, voxel.traceOrigin >> 8u) & 255u) * rcp(256.0) + rcp(512.0)) - 0.5;
     vec3 normal = octDecode(vec2(uvec2(voxel.traceOrigin >> 4u, voxel.traceOrigin) & 15u) * rcp(14.0));
 
-    Ray ircRay = Ray(playerPos, randomHemisphereDir(normal, state));
+    Ray ircRay = Ray(playerPos + normal * rcp(256.0), randomHemisphereDir(normal, state));
     vec4 radiance = vec4(0.0);
 
     RayHitInfo rt = TraceRay(ircRay, IRCACHE_MAX_RT_DISTANCE, true, true);
@@ -126,6 +126,6 @@ void main ()
 
     vec4 r = unpackHalf4x16(voxel.radiance);
 
-    ircache.entries[index].direct = pack3x10(mix(unpack3x10(voxel.direct), direct, (r == vec4(-1.0)) ? 1.0 : 0.1));
-    ircache.entries[index].radiance = packHalf4x16(any(isnan(r)) ? vec4(0.0) : (r == vec4(-1.0)) ? radiance : mix(r, radiance, 0.015));
+    ircache.entries[index].direct = pack3x10(mix(unpack3x10(voxel.direct), direct, (r == vec4(-1.0)) ? 1.0 : rcp(max(16.0, 0.25 * frameRate))));
+    ircache.entries[index].radiance = packHalf4x16(any(isnan(r)) ? vec4(0.0) : (r == vec4(-1.0)) ? radiance : mix(r, radiance, rcp(max(128.0, 2.0 * frameRate))));
 }

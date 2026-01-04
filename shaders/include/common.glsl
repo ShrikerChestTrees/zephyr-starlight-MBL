@@ -84,13 +84,13 @@
         return (uvec3(t >> 22u, t >> 12u, t >> 2u) & 1023u) * rcp(1023.0);
     }
 
-    uint pack4x8 (vec4 t) 
+    uint packExp4x8 (vec4 t) 
     {
         uvec4 result = uvec4(clamp(t * 254.0 + 0.5, 0.0, 254.0));
         return (result.x << 24u) | (result.y << 16u) | (result.z << 8u) | (result.w);
     }
 
-    vec4 unpack4x8 (uint t) 
+    vec4 unpackExp4x8 (uint t) 
     {
         return (uvec4(t >> 24u, t >> 16u, t >> 8u, t) & 255u) * rcp(254.0);
     }
@@ -161,7 +161,7 @@
 
     vec3 sampleSunDir (vec3 lightDir, vec2 dither)
     {
-        return tbnNormal(lightDir) * vec3(sqrt(dither.y) * vec2(cos(TWO_PI * dither.x), sin(TWO_PI * dither.x)), rcp(SUN_SIZE));
+        return tbnNormal(lightDir) * vec3(SHADOW_SOFTNESS * sqrt(dither.y) * vec2(cos(TWO_PI * dither.x), sin(TWO_PI * dither.x)), 1.0);
     }
 
     float maxOf (vec3 t) 
@@ -231,6 +231,11 @@
         float sinTheta = sin(theta);
 
         return mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
+    }
+
+    vec3 dither11f (vec2 coord, vec3 color)
+    {
+        return color + (blueNoise(coord) - 0.5) * uintBitsToFloat(floatBitsToUint(max(vec3(0.000061035156), color)) & uvec3(0xff800000u)) / vec3(64.0, 64.0, 32.0);
     }
 
     // Adapted from https://www.youtube.com/watch?v=Qz0KTGYJtUk&t=674s

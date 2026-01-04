@@ -5,7 +5,6 @@
 #include "/include/pbr.glsl"
 #include "/include/main.glsl"
 #include "/include/textureSampling.glsl"
-#include "/include/ircache.glsl"
 #include "/include/atmosphere.glsl"
 #include "/include/brdf.glsl"
 #include "/include/spaceConversion.glsl"
@@ -30,4 +29,5 @@ void main ()
     if (mat.roughness > REFLECTION_ROUGHNESS_THRESHOLD) return;
 
     color.rgb += texelFetch(colortex2, texel, 0).rgb * schlickFresnel(mat.F0, dot(mat.textureNormal, normalize(screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, 0.0)).xyz - screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, depth)).xyz)));
+    color.rgb = dither11f(gl_FragCoord.xy, color.rgb);
 }

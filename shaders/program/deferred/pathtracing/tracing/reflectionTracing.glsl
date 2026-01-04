@@ -13,6 +13,7 @@
 #include "/include/ircache.glsl"
 #include "/include/atmosphere.glsl"
 #include "/include/spaceConversion.glsl"
+#include "/include/lighting.glsl"
 
 layout (rgba16f) uniform image2D colorimg2;
 layout (local_size_x = 8, local_size_y = 8) in;
@@ -48,54 +49,59 @@ void main ()
     vec2 uv = (vec2(offsetCoord) + 0.5) * texelSize;
     vec4 playerPos = screenToPlayerPos(vec3(uv, depth));
 
-    Ray specularRay;
-
-    specularRay.origin = playerPos.xyz + mat.geoNormal * 0.005;
-    
     vec3 radiance = vec3(0.0);
     float parallaxDepth = REFLECTION_MAX_RT_DISTANCE;
 
     for (int i = 0; i < REFLECTION_SAMPLES; i++) {
+        vec3 throughput = vec3(1.0);
+        float roughnessAccum = mat.roughness;
+        float rayDist = 0.0;
+
+        Ray specularRay;
+        specularRay.origin = playerPos.xyz + mat.geoNormal * 0.005;
+
         specularRay.direction = sampleVNDF(normalize(playerPos.xyz - screenToPlayerPos(vec3(uv, 0.00001)).xyz), mat.textureNormal, mat.roughness, 
             #if NOISE_METHOD == 1
-                vec2(heitzSample(ivec2(gl_GlobalInvocationID.xy), frameCounter, 2 * i), heitzSample(ivec2(gl_GlobalInvocationID.xy), frameCounter, 2 * i + 1))
+                vec2(heitzSample(ivec2(gl_GlobalInvocationID.xy), REFLECTION_SAMPLES * frameCounter + i, 0), heitzSample(ivec2(gl_GlobalInvocationID.xy), REFLECTION_SAMPLES * frameCounter + i, 1))
             #else
                 vec2(randomValue(state), randomValue(state))
             #endif
         );
-        RayHitInfo rt = TraceRay(specularRay, REFLECTION_MAX_RT_DISTANCE, true, true);
 
-        if (rt.hit) {
-            vec3 hitPos = specularRay.origin + rt.dist * specularRay.direction;
-            vec3 hitUv = playerToScreenPos(hitPos);
+        for (int j = 0; j < REFLECTION_BOUNCES; j++) {
+            RayHitInfo rt = TraceRay(specularRay, REFLECTION_MAX_RT_DISTANCE, true, true);
+            if (luminance(throughput) > 0.5) rayDist += rt.dist;
 
-            radiance += rt.albedo.rgb * rt.emission;
+            if (rt.hit) {
+                radiance += throughput * rt.albedo.rgb * rt.emission;
 
-            vec3 diffuse, direct;
+                vec3 hitPos = specularRay.origin + rt.dist * specularRay.direction;
+                IRCResult r = sampleReflectionLighting(hitPos, rt.normal, vec2(randomValue(state), randomValue(state)));
 
-            if (floor(hitUv.xy) == vec2(0.0) && lengthSquared(hitPos - screenToPlayerPos(vec3(hitUv.xy, texelFetch(depthtex1, ivec2(hitUv.xy * renderSize), 0).x)).xyz) < 0.0025) {
-                diffuse = texelFetch(colortex3, ivec2(hitUv.xy * renderSize), 0).rgb;
-                direct = texelFetch(colortex5, ivec2(hitUv.xy * renderSize), 0).rgb;
+                radiance += throughput * rt.albedo.rgb * r.diffuseIrradiance;
+
+                if (dot(rt.normal, shadowDir) > 0.0) {
+                    radiance += throughput * getLightTransmittance(shadowDir) * lightBrightness * r.directIrradiance * evalCookBRDF(shadowDir, specularRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
+                }
+
+                roughnessAccum = mix(roughnessAccum, 1.0, rt.roughness);
+
+                if (roughnessAccum > REFLECTION_ROUGHNESS_THRESHOLD || luminance(throughput) < 0.2) {
+                    break;
+                } else {
+                    specularRay.origin = hitPos + rt.normal * 0.003;
+                    specularRay.direction = sampleVNDF(specularRay.direction, rt.normal, rt.roughness, vec2(randomValue(state), randomValue(state)));
+                    throughput *= schlickFresnel(rt.F0, dot(specularRay.direction, rt.normal));
+                }
             } else {
-                IRCResult query = irradianceCache(specularRay.origin + specularRay.direction * rt.dist, rt.normal, 0u);
-
-                diffuse = query.diffuseIrradiance;
-                direct = query.directIrradiance;
+                #ifndef DIMENSION_END
+                    radiance += throughput * rt.albedo.rgb * sampleSkyView(specularRay.direction);
+                #endif
+                break;
             }
-
-            radiance += rt.albedo.rgb * diffuse;
-
-            if (dot(rt.normal, shadowDir) > 0.0) {
-                radiance += getLightTransmittance(shadowDir) * lightBrightness * direct * evalCookBRDF(shadowDir, specularRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
-            }
-        } 
-        #ifndef DIMENSION_END
-            else {
-                radiance += rt.albedo.rgb * sampleSkyView(specularRay.direction);
-            }
-        #endif
-
-        parallaxDepth = min(parallaxDepth, rt.dist);
+        }
+        
+        parallaxDepth = min(parallaxDepth, rayDist);
     }
     
     radiance *= rcp(REFLECTION_SAMPLES);

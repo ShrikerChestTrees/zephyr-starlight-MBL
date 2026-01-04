@@ -52,7 +52,7 @@ void main ()
         filteredData = vec4(0.0);
     }
 
-    lastFrame.w = max(1.0, lastFrame.w * min(1.0, exp(2.0 - 2.0 * playerPos.w * prevUv.w)));
+    lastFrame.w = max(1.0, lastFrame.w * min(1.0, exp(2.5 - 2.5 * playerPos.w * prevUv.w)));
 
     filteredData.rgb = mix(lastFrame.rgb, filteredData.rgb, rcp(lastFrame.w));
     filteredData.w = min(lastFrame.w + 1.0, max(PT_DIFFUSE_ACCUMULATION_LIMIT, frameRate));

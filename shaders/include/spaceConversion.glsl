@@ -16,7 +16,7 @@
     vec3 playerToScreenPos (vec3 playerPos)
     {
         vec4 homogeneousPos = gbufferModelViewProjection3x4 * playerPos + gbufferModelViewProjection3;
-        return (homogeneousPos.xyz / homogeneousPos.w + vec3(taaOffset, 0.0)) * 0.5 + 0.5;
+        return homogeneousPos.w > 0.0 ? (homogeneousPos.xyz / homogeneousPos.w + vec3(taaOffset, 0.0)) * 0.5 + 0.5 : vec3(-1.0);
     }
 
 #endif

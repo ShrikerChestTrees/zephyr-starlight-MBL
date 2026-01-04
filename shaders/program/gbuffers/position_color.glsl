@@ -1,8 +1,12 @@
-#ifdef fsh
-
 #include "/include/uniforms.glsl"
 #include "/include/config.glsl"
 #include "/include/common.glsl"
+#include "/include/constants.glsl"
+#include "/include/pbr.glsl"
+#include "/include/main.glsl"
+#include "/include/atmosphere.glsl"
+
+#ifdef fsh
 
 in VSOUT 
 {
@@ -23,14 +27,6 @@ void main ()
 #endif
 
 #ifdef vsh
-
-#include "/include/uniforms.glsl"
-#include "/include/config.glsl"
-#include "/include/common.glsl"
-#include "/include/constants.glsl"
-#include "/include/pbr.glsl"
-#include "/include/main.glsl"
-#include "/include/atmosphere.glsl"
 
 out VSOUT 
 {

@@ -189,7 +189,7 @@
 
         vec4 albedo = unpackUnorm4x8(data.x);
         vec4 specularData = unpackUnorm4x8(data.y);
-        vec4 normalData = unpack4x8(data.z);
+        vec4 normalData = unpackExp4x8(data.z);
 
         DeferredMaterial result;
 
@@ -215,7 +215,7 @@
 
         pack.x = packUnorm4x8(vec4(albedo, 0.0));
         pack.y = packUnorm4x8(specularData);
-        pack.z = pack4x8(vec4(octEncode(geoNormal), octEncode(textureNormal)));
+        pack.z = packExp4x8(vec4(octEncode(geoNormal), octEncode(textureNormal)));
         pack.w = (blockId & 0x0000ffffu) | (uint(isHand) << 31u);
 
         return pack;

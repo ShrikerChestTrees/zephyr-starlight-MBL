@@ -1,7 +1,7 @@
 ![screenshot](assets/2026-01-01_01.25.04.png)
 
 <font size="6"><h1 align = "center">⭐ zephyr-starlight</h1></font>
-<font size="3"><p align = "center">An experimental path traced shaderpack for Minecraft</p></font>
+<font size="3"><p align = "center">Experimental real-time path traced shaderpack for Minecraft</p></font>
 
 # About
 
@@ -9,12 +9,13 @@ Unlike (almost) all other path traced shaders for Minecraft, this one uses a com
 
 ## 📃 Features
 
-* Triangle/quad list-based voxelization for complex geometry like entities, block entities and detailed blocks.
+* Triangle/quad list-based voxelization for complex geometry like entities, block entities and detailed blocks
 * Path traced diffuse, reflections and sun shadows
 * Temporal Anti-Aliasing
 * Normal & specular mapping support
 * Basic sky rendering
 * Sparse irradiance cache for diffuse multi-bounce approximation
+* Reflection motion vector calculation (no TAA ghosting on reflections)
 * Spatiotemporal denoising
 * Optional TAAU (TAA Upscaling)
 * Post-processing: auto exposure & chromatic aberration
@@ -32,9 +33,10 @@ Unlike (almost) all other path traced shaders for Minecraft, this one uses a com
 * GPUs: NVIDIA, AMD
 * Minecraft - version 1.21 and above
 * Iris - version 1.8.0 and above
-* Optifine - not supported (not planned)
+* Optifine - not supported
 * Distant Horizons/Voxy - not supported (planned)
 * OrthoCamera - supported but still broken in a few cases
+* macOS - not supported
 
 ## 📌 Performance Tips
 
@@ -50,5 +52,7 @@ Unlike (almost) all other path traced shaders for Minecraft, this one uses a com
 * Rain particles are not rendered.
 * Reflections (especially mirror-like ones) show a lot of noise and flickering. Lowering Irradiance Cache -> Update Interval and increasing reflection samples in path tracing settings can improve it.
 * The shaderpack takes very long to load on first use, but it should be faster on subsequent loads.
+* Normal maps don't show up in reflections.
+* Breaking blocks in caves shows light leaking for a split second. This is unavoidable now.
 * In some cases, parts of the terrain will fail to voxelize. Increasing Triangle and Voxel Array Size usually fixes it.
-* TAA produces a lot of ghosting on smooth reflections in movement. It might be possible to improve on this by using a reflection virtual depth buffer for TAA reprojection.
+* ~~TAA produces a lot of ghosting on smooth reflections in movement. It might be possible to improve on this by using a reflection virtual depth buffer for TAA reprojection.~~

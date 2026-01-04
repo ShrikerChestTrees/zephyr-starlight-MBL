@@ -64,15 +64,15 @@ void main ()
 
         if (rt.dist != DIFFUSE_MAX_RT_DISTANCE) {        
             IRCResult query = irradianceCache(diffuseRay.origin + diffuseRay.direction * rt.dist, rt.normal, 0u);
-            radiance += max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * (rt.albedo.rgb * rt.emission + query.diffuseIrradiance * smoothstep(rt.dist, 0.0, 1.0) * rt.albedo.rgb);
+            radiance += max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * (rt.albedo.rgb * rt.emission + smoothstep(0.0, 0.75, rt.dist) * max(vec3(MINIMUM_LIGHT), query.diffuseIrradiance * rt.albedo.rgb));
 
             vec3 dir = sampleSunDir(shadowDir, vec2(randomValue(state), randomValue(state)));
 
             if (dot(rt.normal, dir) > 0.0) {
-                vec3 sunlight = getLightTransmittance(sunDir) * max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * lightBrightness * evalCookBRDF(sunDir, diffuseRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
+                vec3 sunlight = getLightTransmittance(shadowDir) * max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * lightBrightness * evalCookBRDF(shadowDir, diffuseRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
 
                 #if SUNLIGHT_GI_QUALITY == 0
-                    sunlight *= query.directIrradiance;
+                    sunlight *= smoothstep(0.0, 0.75, rt.dist) * query.directIrradiance;
                 #elif SUNLIGHT_GI_QUALITY == 1
                     if (randomValue(state) > smoothstep(0.75, 1.0, rt.dist) && (clamp(query.directIrradiance, vec3(0.01), vec3(0.99)) == query.directIrradiance)) {
                         sunlight *= TraceShadowRay(Ray(diffuseRay.origin + diffuseRay.direction * rt.dist + rt.normal * 0.003, dir), 1024.0, true).rgb;

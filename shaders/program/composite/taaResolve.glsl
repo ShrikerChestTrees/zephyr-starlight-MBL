@@ -24,11 +24,14 @@ void main ()
 
     for (int x = -1; x <= 1; x++) 
 		for (int y = -1; y <= 1; y++)
-			depth = min(depth, texelFetch(depthtex1, clamp(srcTexel + ivec2(x, y), ivec2(0), ivec2(renderSize) - 1), 0).r);
+            #ifdef TAA_VIRTUAL_DEPTH
+			    depth = min(depth, texelFetch(colortex13, clamp(srcTexel + ivec2(x, y), ivec2(0), ivec2(renderSize) - 1), 0).r);
+            #else
+                depth = min(depth, texelFetch(depthtex1, clamp(srcTexel + ivec2(x, y), ivec2(0), ivec2(renderSize) - 1), 0).r);
+            #endif
 
     vec4 currPos = screenToPlayerPos(vec3(uv, depth));
-    vec4 prevPos = gbufferPreviousModelViewProjection * vec4(depth == 1.0 ? currPos.xyz : (currPos.xyz + cameraVelocity), 1.0);
-    prevPos.xyz /= prevPos.w;
+    vec4 prevPos = projectAndDivide(gbufferPreviousModelViewProjection, depth == 1.0 ? currPos.xyz : (currPos.xyz + cameraVelocity));
 
     vec3 prevUv = (prevPos.xyz + vec3(taaOffset, 0.0)) * 0.5 + 0.5;
     ivec2 prevTexel = ivec2(screenSize * prevUv.xy + 0.95 * (R2(frameCounter & 15) - 0.5));

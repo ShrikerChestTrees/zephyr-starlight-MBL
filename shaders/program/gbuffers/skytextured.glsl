@@ -1,5 +1,3 @@
-#ifdef fsh
-
 #include "/include/uniforms.glsl"
 #include "/include/config.glsl"
 #include "/include/constants.glsl"
@@ -7,6 +5,8 @@
 #include "/include/pbr.glsl"
 #include "/include/main.glsl"
 #include "/include/atmosphere.glsl"
+
+#ifdef fsh
 
 in VSOUT 
 {
@@ -36,14 +36,6 @@ void main ()
 
 #ifdef vsh
 
-#include "/include/uniforms.glsl"
-#include "/include/config.glsl"
-#include "/include/constants.glsl"
-#include "/include/common.glsl"
-#include "/include/pbr.glsl"
-#include "/include/main.glsl"
-#include "/include/atmosphere.glsl"
-
 out VSOUT 
 {
     vec2 texcoord;
@@ -55,6 +47,8 @@ void main ()
 {   
     vsout.vertexPosition = (gbufferModelViewProjectionInverse * ftransform()).xyz;
     vsout.vertexPosition.xz *= rotate(torad(-(SUN_AZIMUTH_ROTATION)));
+
+    if (renderStage == MC_RENDER_STAGE_SUN) vsout.vertexPosition = length(vsout.vertexPosition) * mix(sunDir, normalize(vsout.vertexPosition), SUN_SIZE);
 
     gl_Position = gbufferModelViewProjection * vec4(vsout.vertexPosition, 1.0);
 

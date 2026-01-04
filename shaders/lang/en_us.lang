@@ -3,21 +3,21 @@ profile.FAST  = §cFast
 
 option.MAIN_TITLE = Zephyr Starlight
 
-value.MAIN_TITLE.0 = §dv0.1
-value.MAIN_TITLE.1 = §cv0.1
-value.MAIN_TITLE.2 = §6v0.1
-value.MAIN_TITLE.3 = §ev0.1
-value.MAIN_TITLE.4 = §av0.1
-value.MAIN_TITLE.5 = §bv0.1
-value.MAIN_TITLE.6 = §9v0.1
-value.MAIN_TITLE.7 = §5v0.1
+value.MAIN_TITLE.0 = §dv0.1.2
+value.MAIN_TITLE.1 = §cv0.1.2
+value.MAIN_TITLE.2 = §6v0.1.2
+value.MAIN_TITLE.3 = §ev0.1.2
+value.MAIN_TITLE.4 = §av0.1.2
+value.MAIN_TITLE.5 = §bv0.1.2
+value.MAIN_TITLE.6 = §9v0.1.2
+value.MAIN_TITLE.7 = §5v0.1.2
 
 screen.PATH_TRACING    = Path Tracing
 screen.ATMOSPHERICS    = Atmosphere & Lighting
 screen.TERRAIN         = Terrain
 screen.ANTIALIASING    = Anti-Aliasing
 screen.POST_PROCESSING = Post Processing
-screen.MISC            = Misc
+screen.MISC            = Misc / Debug
 
 screen.PT_VOXELIZATION = Voxelization
 screen.PT_IRCACHE      = Irradiance Cache
@@ -38,16 +38,18 @@ option.DIFFUSE_MAX_RT_DISTANCE       = Diffuse Trace Distance
 option.PT_DIFFUSE_ACCUMULATION_LIMIT = Max Accumulated Frames
 option.DIFFUSE_DENOISE_PASSES        = Denoising Passes
 option.SUNLIGHT_GI_QUALITY           = Sunlight GI Quality
+option.MINIMUM_LIGHT                 = Minimum Light
 
 option.REFLECTION_SAMPLES               = Reflection Samples
 option.REFLECTION_MAX_RT_DISTANCE       = Reflection Trace Distance
 option.PT_REFLECTION_ACCUMULATION_LIMIT = Max Accumulated Frames
 option.REFLECTION_ROUGHNESS_THRESHOLD   = Reflection Roughness Threshold
+option.REFLECTION_BOUNCES               = Reflection Bounces
 
 option.SHADOW_SAMPLES               = Shadow Samples
 option.SHADOW_MAX_RT_DISTANCE       = Shadow Trace Distance
 option.PT_SHADOW_ACCUMULATION_LIMIT = Max Accumulated Frames
-option.SUN_SIZE                     = Sun Size
+option.SHADOW_SOFTNESS              = Shadow Softness
 
 option.DENOISER_DEPTH_WEIGHT  = Denoiser Depth Weight
 option.DENOISER_NORMAL_WEIGHT = Denoiser Normal Weight
@@ -115,8 +117,22 @@ option.SATURATION                   = Saturation
 option.CHROMATIC_ABERRATION         = Chromatic Aberration
 option.CHROMATIC_ABERRATION_SAMPLES = Chromatic Aberration Samples
 
+option.MOTION_BLUR                  = Motion Blur
+option.MOTION_BLUR_STRENGTH         = Motion Blur Strength
+option.MOTION_BLUR_SAMPLES          = Motion Blur Samples
+
+option.DEPTH_OF_FIELD               = Depth of Field
+option.APERTURE_SIZE                = DoF Aperture Size
+option.DOF_SAMPLES                  = DoF Samples
+option.DOF_FOCUS_MODE               = DoF Focus Mode
+option.DOF_FOCUS_DISTANCE           = Focus Distance
+
+value.DOF_FOCUS_MODE.0              = Auto
+value.DOF_FOCUS_MODE.1              = Manual
+
 option.HAND_FOV               = Hand FOV
 option.DISABLE_DENOISING      = Disable Denoising
 option.FORCE_TRIANGLE_TRACING = Force Triangle Tracing
+option.TAA_VIRTUAL_DEPTH  = TAA Virtual Depth Buffer
 
 suffix.HAND_FOV               = °

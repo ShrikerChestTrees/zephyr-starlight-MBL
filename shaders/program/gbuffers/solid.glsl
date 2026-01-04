@@ -1,11 +1,12 @@
-#ifdef fsh
-
 #include "/include/uniforms.glsl"
 #include "/include/config.glsl"
 #include "/include/constants.glsl"
 #include "/include/common.glsl"
 #include "/include/pbr.glsl"
 #include "/include/main.glsl"
+#include "/include/textureData.glsl"
+
+#ifdef fsh
 
 in VSOUT
 {
@@ -50,6 +51,7 @@ void main ()
 
     #ifdef NORMAL_MAPPING
         vec3 textureNormal = vec3(normalData.rg * 2.0 - 1.0, 1.0);
+        textureNormal.xy *= vec2(greaterThan(abs(textureNormal.xy), vec2(rcp(128.0))));
         textureNormal.z = sqrt(max(0.0, 1.0 - lengthSquared(textureNormal.xy)));
         textureNormal = tbnNormalTangent(geoNormal, vsout.vertexTangent) * textureNormal;
     #else
@@ -80,14 +82,6 @@ void main ()
 
 attribute vec2 mc_Entity;
 attribute vec4 at_tangent;
-
-#include "/include/uniforms.glsl"
-#include "/include/config.glsl"
-#include "/include/constants.glsl"
-#include "/include/common.glsl"
-#include "/include/pbr.glsl"
-#include "/include/main.glsl"
-#include "/include/textureData.glsl"
 
 out VSOUT
 {
