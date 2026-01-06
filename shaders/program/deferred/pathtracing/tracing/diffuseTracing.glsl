@@ -46,33 +46,51 @@ void main ()
     }
 
     vec2 uv = (vec2(offsetCoord) + 0.5) * texelSize;
-    vec4 playerPos = screenToPlayerPos(vec3(uv, depth));
+    vec3 rayOrigin;
 
+    if (mat.isHand) {
+        rayOrigin = 0.5 * playerLookVector;
+    } else {
+        rayOrigin = screenToPlayerPos(vec3(uv, depth)).xyz;
+    }
+    
     Ray diffuseRay;
 
-    diffuseRay.origin = playerPos.xyz + mat.geoNormal * 0.005;
+    diffuseRay.origin = rayOrigin + mat.geoNormal * 0.005;
     vec3 radiance = vec3(0.0);
 
     for (int i = 0; i < DIFFUSE_SAMPLES; i++) {
-        #if NOISE_METHOD == 1
-            diffuseRay.direction = randomHemisphereDirBlueNoise(ivec2(gl_GlobalInvocationID.xy), mat.geoNormal, i);
+        #if SAMPLING_METHOD == 1
+            #if NOISE_METHOD == 1
+                diffuseRay.direction = normalize(mat.textureNormal + randomDirBlueNoise(ivec2(gl_GlobalInvocationID.xy), i));
+            #else
+                diffuseRay.direction = normalize(mat.textureNormal + randomDir(state));
+            #endif
+
+            float pdf = 2.0 / PI;
         #else
-            diffuseRay.direction = randomHemisphereDir(mat.geoNormal, state);
+            #if NOISE_METHOD == 1
+                diffuseRay.direction = randomHemisphereDirBlueNoise(ivec2(gl_GlobalInvocationID.xy), mat.geoNormal, i);
+            #else
+                diffuseRay.direction = randomHemisphereDir(mat.geoNormal, state);
+            #endif
+
+            float pdf = max(0.0, dot(mat.textureNormal, diffuseRay.direction));
         #endif
 
         RayHitInfo rt = TraceRay(diffuseRay, DIFFUSE_MAX_RT_DISTANCE, true, true);
 
         if (rt.dist != DIFFUSE_MAX_RT_DISTANCE) {        
             IRCResult query = irradianceCache(diffuseRay.origin + diffuseRay.direction * rt.dist, rt.normal, 0u);
-            radiance += max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * (rt.albedo.rgb * rt.emission + smoothstep(0.0, 0.75, rt.dist) * max(vec3(MINIMUM_LIGHT), query.diffuseIrradiance * rt.albedo.rgb));
+            radiance += pdf * (rt.albedo.rgb * rt.emission + smoothstep(0.0, 0.75, rt.dist) * max(vec3(MINIMUM_LIGHT), query.diffuseIrradiance * rt.albedo.rgb));
 
             vec3 dir = sampleSunDir(shadowDir, vec2(randomValue(state), randomValue(state)));
 
-            if (dot(rt.normal, dir) > 0.0) {
-                vec3 sunlight = getLightTransmittance(shadowDir) * max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * lightBrightness * evalCookBRDF(shadowDir, diffuseRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
+            if (dot(rt.normal, dir) > -0.0001) {
+                vec3 sunlight = getLightTransmittance(shadowDir) * pdf * lightBrightness * evalCookBRDF(normalize(shadowDir + rt.normal * 0.03125), diffuseRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
 
                 #if SUNLIGHT_GI_QUALITY == 0
-                    sunlight *= smoothstep(0.0, 0.75, rt.dist) * query.directIrradiance;
+                    sunlight *= max(smoothstep(0.0, 0.75, rt.dist), step(0.95, luminance(query.directIrradiance))) * query.directIrradiance;
                 #elif SUNLIGHT_GI_QUALITY == 1
                     if (randomValue(state) > smoothstep(0.75, 1.0, rt.dist) && (clamp(query.directIrradiance, vec3(0.01), vec3(0.99)) == query.directIrradiance)) {
                         sunlight *= TraceShadowRay(Ray(diffuseRay.origin + diffuseRay.direction * rt.dist + rt.normal * 0.003, dir), 1024.0, true).rgb;
@@ -92,7 +110,7 @@ void main ()
         } 
         #ifndef DIMENSION_END
             else {
-                radiance += rt.albedo.rgb * max(0.0, dot(mat.textureNormal, diffuseRay.direction)) * sampleSkyView(diffuseRay.direction);
+                radiance += rt.albedo.rgb * pdf * sampleSkyView(diffuseRay.direction);
             }
         #endif
     }

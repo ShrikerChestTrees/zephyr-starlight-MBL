@@ -95,6 +95,17 @@
         return (uvec4(t >> 24u, t >> 16u, t >> 8u, t) & 255u) * rcp(254.0);
     }
 
+    uint pack4x6 (vec4 t)
+    {
+        uvec4 result = uvec4(clamp(t * 63.0 + 0.5, 0.0, 63.0));
+        return (result.x << 26u) | (result.y << 20u) | (result.z << 14u) | (result.w << 8u);
+    }
+
+    vec4 unpack4x6 (uint t)
+    {
+        return (uvec4(t >> 26u, t >> 20u, t >> 14u, t >> 8u) & 63u) * rcp(63.0);
+    }
+
     uint pack2x8 (vec2 t) 
     {
         uvec2 result = uvec2(clamp(t * 254.0 + 0.5, 0.0, 254.0));

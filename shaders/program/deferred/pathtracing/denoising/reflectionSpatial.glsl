@@ -19,11 +19,12 @@
         vec2(2.0, 3.0),
         vec2(6.0, 0.0),
         vec2(0.0, 6.0),
-        vec2(-12.0, 12.0),
         vec2(12.0, 12.0),
+        vec2(-12.0, 12.0),
         vec2(16.0, 0.0),
         vec2(0.0, 16.0)
     );
+    
     void main ()
     {   
         ivec2 texel = ivec2(gl_FragCoord.xy);
@@ -35,19 +36,19 @@
         
         DeferredMaterial mat = unpackMaterialData(texel);
 
-        if (mat.roughness > REFLECTION_ROUGHNESS_THRESHOLD || mat.roughness < 0.003) return;
+        if (mat.roughness > REFLECTION_ROUGHNESS_THRESHOLD || mat.roughness < 0.0002) return;
         
         float dither = blueNoise(gl_FragCoord.xy).r;
         vec4 currData = texelFetch(colortex2, texel, 0);
         vec4 currPos = projectAndDivide(gbufferModelViewProjectionInverse, vec3((texel + 0.5) * texelSize, depth) * 2.0 - 1.0 - vec3(taaOffset, 0.0));
 
-		vec2 sampleDir = kernel[FILTER_PASS];
-
-        float temporalWeight = (isnan(currData.w) ? 0.0 : clamp(currData.w, 0.0, 8.0)) * sqrt(REFLECTION_SAMPLES);
+		vec2 sampleDir = kernel[FILTER_PASS] * smoothstep(-0.003, 0.004, mat.roughness);
+        float temporalWeight = (isnan(currData.w) ? 0.0 : clamp(currData.w, 0.0, 16.0)) * sqrt(REFLECTION_SAMPLES);
         vec4 samples = vec4(0.0);
         float weights = 0.0;
 
         vec2 samplePos = gl_FragCoord.xy - 1.5 * sampleDir + dither * sampleDir;
+
         for (int i = 0; i < 3; i++, samplePos += sampleDir) {
             ivec2 sampleCoord = ivec2(samplePos);
 
@@ -56,14 +57,14 @@
 
                 if (!any(isnan(sampleData))) {
                     vec3 sampleNormal = octDecode(unpackExp4x8(texelFetch(colortex9, sampleCoord, 0).r).zw);
-                    float sampleRoughness = sqr(1.0 - unpackUnorm4x8(texelFetch(colortex8, sampleCoord, 0).g).r);
+                    float sampleRoughness = sqr(1.0 - unpack4x6(texelFetch(colortex8, sampleCoord, 0).g).r);
                     vec3 samplePos = screenToPlayerPos(vec3((sampleCoord + 0.5) * texelSize, texelFetch(depthtex1, sampleCoord, 0).x)).xyz;
 
                     float sampleWeight = exp(-temporalWeight * (
                         DENOISER_DEPTH_WEIGHT * abs(dot(mat.geoNormal, currPos.xyz - samplePos.xyz))
                         + 128.0 * currPos.w * (-dot(sampleNormal, mat.textureNormal) * 0.5 + 0.5)
                         + 4.0 * abs(mat.roughness - sampleRoughness)
-                        + 10.0 * max(0.15 - mat.roughness, 0.0) * max(0.0, FILTER_PASS - 1.5) * min(pow(lengthSquared(sampleData.rgb - currData.rgb), 0.15), 0.2)
+                        + 0.5 * (1.25 - smoothstep(0.01, 0.07, mat.roughness)) * max(0.0, FILTER_PASS - 1.0) * pow(lengthSquared(sampleData.rgb - currData.rgb), 0.125)
                         )
                     );
 

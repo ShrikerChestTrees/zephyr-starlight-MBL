@@ -1,7 +1,7 @@
 RayHitInfo hitResult = miss(maxDist);
 
 ray.origin += voxelOffset;
-ray.direction = sign(ray.direction) * max(abs(ray.direction), vec3(0.0001));
+ray.direction = vec3(ray.direction.x < 0.0 ? -1.0 : 1.0, ray.direction.y < 0.0 ? -1.0 : 1.0, ray.direction.z < 0.0 ? -1.0 : 1.0) * max(abs(ray.direction), vec3(0.0001));
 
 vec3 delta = abs(1.0 / ray.direction);
 vec3 rayStep = sign(ray.direction);
@@ -41,7 +41,7 @@ for (boxTestCount = 0u, triangleTestCount = 0u; triangleTestCount < 1024u && box
             vec3 normal = cross(tr.tangent, tr.bitangent);
 
             float determinant = -dot(ray.direction, normal);
-            if (useBackFaceCulling && tr.doBackFaceCulling && determinant < 0.00001) continue;
+            if (useBackFaceCulling && tr.doBackFaceCulling && determinant < 0.00001 || abs(determinant) < 0.00001) continue;
 
             float invDet = rcp(determinant);
             vec3 ao = ray.origin - tr.pos;
@@ -68,7 +68,7 @@ for (boxTestCount = 0u, triangleTestCount = 0u; triangleTestCount < 1024u && box
                     albedo.rgb *= tr.color;
                 #endif
 
-                if (albedo.a > 0.1) 
+                if (albedo.a > 0.1 || tr.isTranslucent) 
                 {   
                     if (alphaBlend && tr.isTranslucent && any(greaterThan(tint, vec3(0.05))))
                     {

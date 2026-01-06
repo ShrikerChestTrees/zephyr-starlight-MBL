@@ -50,7 +50,12 @@ void main ()
 
     vsout.texcoord = mat4x2(gl_TextureMatrix[0]) * gl_MultiTexCoord0;
     vsout.vertexColor = gl_Color.rgb;
-    vsout.blockId = (pack2x8(octEncode(alignNormal(transpose(mat3(gbufferModelView)) * gl_NormalMatrix * gl_Normal, 0.01))) << 16u) | uint(mc_Entity.x);
+    vsout.blockId = (pack2x8(octEncode(alignNormal(transpose(mat3(gbufferModelView)) * gl_NormalMatrix * gl_Normal, 0.01))) << 16u) |
+    #ifdef STAGE_HAND
+        (currentRenderedItemId & 16383u) | 0x00004000u;
+    #else
+        uint(mc_Entity.x) & 16383u;
+    #endif
 
     #ifdef STAGE_WEATHER
         gl_Position = vec4(-1.0);

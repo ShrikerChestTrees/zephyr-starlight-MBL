@@ -1,3 +1,18 @@
+# v0.1.3
+
+Changes over v0.1.2:
+* Fixed an issue with temporal accumulation that caused dissoccluded areas to be noisier that expected
+* Tweaked reflection spatial denoising to preserve reflection detail better
+* Fixed incorrect fresnel in secondary reflection bounces
+* Added glass & water refraction (disabled by default). Can be enabled at Terrain > Glass/Water Refraction
+* Added new options: 
+  * Reflections > Per Pixel Shadow Calculation. When enabled, an additional ray is used to calculate sharp shadows in reflections.
+  * Diffuse Lighting > Sampling Method. Uniform distributes rays in a hemisphere-like distribution. Cosine Weighted emits more rays that are perpendicular-ish to the surface
+* Added contact shadows to the player model
+* Improved the look of sunlight on surfaces parallel to the sun direction (half-lambert-like shading)
+* Improved sky view texture mapping for less artifacts
+* Other small tweaks & improvements
+
 # v0.1.2
 
 Changes over v0.1.1:

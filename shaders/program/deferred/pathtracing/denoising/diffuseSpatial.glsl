@@ -44,8 +44,8 @@
         vec3 currGeoNormal = octDecode(unpackExp4x8(normalData).xy);
         vec4 currPos = screenToPlayerPos(vec3((texel + 0.5) * texelSize, depth));
 
-		vec2 sampleDir = kernel[FILTER_PASS];
-        float temporalWeight = (isnan(currData.w) ? 0.01 : clamp(currData.w, 0.01, 32.0)) * sqrt(DIFFUSE_SAMPLES);
+		vec2 sampleDir = kernel[FILTER_PASS] * (2.0 - smoothstep(0.0, 4.0, currData.w));
+        float temporalWeight = (isnan(currData.w) ? 0.01 : clamp(currData.w, 0.01, 64.0)) * sqrt(DIFFUSE_SAMPLES) * 0.5;
         vec4 samples = vec4(0.0);
         float weights = 0.0;
 
@@ -72,7 +72,7 @@
                     float sampleWeight = exp(-temporalWeight * (
                           DENOISER_NORMAL_WEIGHT * currPos.w * (-dot(sampleNormal, currNormal) * 0.5 + 0.5)
                         + DENOISER_DEPTH_WEIGHT * abs(dot(currGeoNormal, posDiff))
-                        + DENOISER_SHARPENING * max(0.0, FILTER_PASS - 1.5) * min(pow(lengthSquared(sampleData.rgb - currData.rgb), 0.16), 0.09)
+                        + DENOISER_SHARPENING * max(0.0, FILTER_PASS - 1.0) * pow(lengthSquared(sampleData.rgb - currData.rgb), 0.14)
                         )
                     );
 

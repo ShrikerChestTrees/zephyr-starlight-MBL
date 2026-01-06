@@ -47,7 +47,11 @@ void main ()
     }
 
     vec2 uv = (vec2(offsetCoord) + 0.5) * texelSize;
-    vec4 playerPos = screenToPlayerPos(vec3(uv, depth));
+    vec3 rayOrigin = screenToPlayerPos(vec3(uv, depth)).xyz;
+
+    if (mat.isHand) {
+        rayOrigin += 0.5 * playerLookVector;
+    }
 
     vec3 radiance = vec3(0.0);
     float parallaxDepth = REFLECTION_MAX_RT_DISTANCE;
@@ -58,9 +62,9 @@ void main ()
         float rayDist = 0.0;
 
         Ray specularRay;
-        specularRay.origin = playerPos.xyz + mat.geoNormal * 0.005;
+        specularRay.origin = rayOrigin + mat.geoNormal * 0.005;
 
-        specularRay.direction = sampleVNDF(normalize(playerPos.xyz - screenToPlayerPos(vec3(uv, 0.00001)).xyz), mat.textureNormal, mat.roughness, 
+        specularRay.direction = sampleVNDF(normalize(rayOrigin - screenToPlayerPos(vec3(uv, 0.00001)).xyz), mat.textureNormal, mat.roughness, 
             #if NOISE_METHOD == 1
                 vec2(heitzSample(ivec2(gl_GlobalInvocationID.xy), REFLECTION_SAMPLES * frameCounter + i, 0), heitzSample(ivec2(gl_GlobalInvocationID.xy), REFLECTION_SAMPLES * frameCounter + i, 1))
             #else
@@ -70,18 +74,18 @@ void main ()
 
         for (int j = 0; j < REFLECTION_BOUNCES; j++) {
             RayHitInfo rt = TraceRay(specularRay, REFLECTION_MAX_RT_DISTANCE, true, true);
-            if (luminance(throughput) > 0.5) rayDist += rt.dist;
+            if (luminance(throughput) > 0.5 && roughnessAccum < 0.2) rayDist += rt.dist;
 
             if (rt.hit) {
                 radiance += throughput * rt.albedo.rgb * rt.emission;
 
                 vec3 hitPos = specularRay.origin + rt.dist * specularRay.direction;
-                IRCResult r = sampleReflectionLighting(hitPos, rt.normal, vec2(randomValue(state), randomValue(state)));
+                IRCResult r = sampleReflectionLighting(hitPos, rt.normal, vec2(randomValue(state), randomValue(state)), 0.3);
 
                 radiance += throughput * rt.albedo.rgb * r.diffuseIrradiance;
 
-                if (dot(rt.normal, shadowDir) > 0.0) {
-                    radiance += throughput * getLightTransmittance(shadowDir) * lightBrightness * r.directIrradiance * evalCookBRDF(shadowDir, specularRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
+                if (dot(rt.normal, shadowDir) > -0.0001) {
+                    radiance += throughput * getLightTransmittance(shadowDir) * lightBrightness * r.directIrradiance * evalCookBRDF(normalize(shadowDir + rt.normal * 0.03125), specularRay.direction, max(0.1, rt.roughness), rt.normal, rt.albedo.rgb, rt.F0);
                 }
 
                 roughnessAccum = mix(roughnessAccum, 1.0, rt.roughness);
@@ -89,9 +93,9 @@ void main ()
                 if (roughnessAccum > REFLECTION_ROUGHNESS_THRESHOLD || luminance(throughput) < 0.2) {
                     break;
                 } else {
+                    throughput *= schlickFresnel(rt.F0, -dot(specularRay.direction, rt.normal));
                     specularRay.origin = hitPos + rt.normal * 0.003;
                     specularRay.direction = sampleVNDF(specularRay.direction, rt.normal, rt.roughness, vec2(randomValue(state), randomValue(state)));
-                    throughput *= schlickFresnel(rt.F0, dot(specularRay.direction, rt.normal));
                 }
             } else {
                 #ifndef DIMENSION_END

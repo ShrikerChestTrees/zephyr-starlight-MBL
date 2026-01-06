@@ -12,16 +12,16 @@ layout (location = 0) out vec4 color;
 
 void main ()
 {   
-    vec2 start = gl_FragCoord.xy;
-    vec2 end = mix(screenSize / 2.0, gl_FragCoord.xy, 500.0 / (500.0 + CHROMATIC_ABERRATION));
+    vec2 uv = gl_FragCoord.xy / screenSize;
+
+    vec2 sampleDir = (mix(vec2(0.5), uv, 500.0 / (500.0 + CHROMATIC_ABERRATION)) - uv) * rcp(CHROMATIC_ABERRATION_SAMPLES);
+    vec2 samplePos = uv + sampleDir * blueNoise(gl_FragCoord.xy).r;
 
     vec3 integratedData = vec3(0.0);
-    vec2 sampleDir = (end - start) * rcp(CHROMATIC_ABERRATION_SAMPLES);
-    vec2 samplePos = start + sampleDir * blueNoise(gl_FragCoord.xy).r;
 
     for (int i = 0; i < CHROMATIC_ABERRATION_SAMPLES; i++, samplePos += sampleDir)
     {
-        integratedData += texelFetch(colortex10, ivec2(samplePos), 0).rgb;
+        integratedData += texture(colortex10, samplePos).rgb;
     }
     
     color = vec4(integratedData * rcp(CHROMATIC_ABERRATION_SAMPLES), 1.0);

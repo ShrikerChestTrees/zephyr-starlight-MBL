@@ -47,7 +47,7 @@ void main ()
 
     if (floor(prevUv.xy) == vec2(0.0) && prevUv.w > 0.0)
     {   
-        lastFrame = texBilinearDepthReject(colortex5, colortex0, geoNormal * dot(geoNormal, playerPos.xyz), prevUv.xy, renderSize);
+        lastFrame = sampleHistory(colortex5, colortex0, geoNormal * dot(geoNormal, playerPos.xyz), prevUv.xy, renderSize);
     }
     else
     {
@@ -56,7 +56,7 @@ void main ()
 
     if (any(isnan(lastFrame))) lastFrame = vec4(0.0, 0.0, 0.0, 1.0);
 
-    lastFrame.w = max(1.0, lastFrame.w * min(1.0, exp(3.0 - 3.0 * playerPos.w * prevUv.w)));
+    lastFrame.w = max(1.0, lastFrame.w * min(1.0, exp(1.0 - playerPos.w * prevUv.w)));
 
     filteredData.rgb = mix(clamp(lastFrame.rgb, shadowMin, shadowMax), filteredData.rgb, rcp(lastFrame.w));
     filteredData.w = min(lastFrame.w + 1.0, PT_SHADOW_ACCUMULATION_LIMIT);

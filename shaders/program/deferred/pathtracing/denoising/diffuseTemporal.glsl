@@ -23,8 +23,7 @@ void main ()
 
     if (depth == 1.0) return;
 
-    vec4 playerPos = gbufferModelViewProjectionInverse * vec4(vec3(gl_FragCoord.xy * texelSize, depth) * 2.0 - 1.0 - vec3(taaOffset, 0.0), 1.0);
-    playerPos.xyz /= playerPos.w;
+    vec4 playerPos = screenToPlayerPos(vec3(gl_FragCoord.xy * texelSize, depth));
     playerPos.xyz += cameraVelocity;
 
     vec3 geoNormal = octDecode(unpack2x8(texelFetch(colortex9, ivec2(gl_FragCoord.xy), 0).x >> 16u));
@@ -36,7 +35,7 @@ void main ()
 
     if (floor(prevUv.xy) == vec2(0.0) && prevUv.w > 0.0)
     {   
-        lastFrame = texBilinearDepthReject(colortex3, colortex0, geoNormal * dot(geoNormal, playerPos.xyz), prevUv.xy, renderSize);
+        lastFrame = sampleHistory(colortex3, colortex0, geoNormal * dot(geoNormal, playerPos.xyz), prevUv.xy, renderSize);
     }
     else
     {

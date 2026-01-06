@@ -102,11 +102,21 @@
 
             return mix(2.0 * rayDest * radiance, vec3(0.03 * smoothstep(-0.05, 0.1, lightDir.y)), rainStrength * 0.7);
         }
+        
+        vec2 skyViewEncodeUv (vec3 dir) {
+            return vec2(atan(dot(dir.xz, vec2(sunDir.z, -sunDir.x)), dot(dir.xz, vec2(sunDir.x, sunDir.z))) / TWO_PI + 0.5, dir.y * 0.5 + 0.5);
+        }
+
+        vec3 skyViewDecodeUv (vec2 uv) {
+            vec3 result = vec3(sin(uv.x * TWO_PI), uv.y * 2.0 - 1.0, cos(uv.x * TWO_PI));
+
+            return vec3(sqrt(1.0 - result.y * result.y) * normalize(mat2(-sunDir.z, sunDir.x, -sunDir.x, -sunDir.z) * result.xz), result.y).xzy;
+        }
 
         #ifndef STAGE_BEGIN
             vec3 sampleSkyView (vec3 dir)
             {
-                return texture(texSkyView, octEncode(dir)).rgb;
+                return texture(texSkyView, skyViewEncodeUv(dir)).rgb;
             }
         #endif
 

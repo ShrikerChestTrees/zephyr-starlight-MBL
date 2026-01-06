@@ -47,7 +47,7 @@ void main ()
 
     vec3 colorMax = vec3(0.0);
 
-    if (mat.roughness < 0.003) {
+    if (mat.roughness < 0.001) {
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 colorMax = max(texelFetch(colortex2, srcTexel + ivec2(x, y), 0).rgb, colorMax);
@@ -63,7 +63,7 @@ void main ()
 
     if (floor(prevUv.xy) == vec2(0.0) && prevUv.w > 0.0)
     {   
-        lastFrame = texBilinearDepthReject(colortex4, colortex0, mat.geoNormal * dot(mat.geoNormal, playerPos.xyz), prevUv.xy, renderSize);
+        lastFrame = sampleHistory(colortex4, colortex0, mat.geoNormal * dot(mat.geoNormal, playerPos.xyz), prevUv.xy, renderSize);
     }
     else
     {
@@ -73,5 +73,5 @@ void main ()
     if (any(isnan(lastFrame))) lastFrame = vec4(0.0, 0.0, 0.0, 1.0);
 
     filteredData.rgb = mix(min(lastFrame.rgb, colorMax), filteredData.rgb, rcp(lastFrame.w));
-    filteredData.w = min(lastFrame.w + 1.0, (filteredData.w > (REFLECTION_MAX_RT_DISTANCE / 2.0) || mat.roughness < 0.003) ? min(4, PT_REFLECTION_ACCUMULATION_LIMIT) : PT_REFLECTION_ACCUMULATION_LIMIT);
+    filteredData.w = min(lastFrame.w + 1.0, (filteredData.w > (REFLECTION_MAX_RT_DISTANCE / 2.0) || mat.roughness < 0.001) ? min(4, PT_REFLECTION_ACCUMULATION_LIMIT) : PT_REFLECTION_ACCUMULATION_LIMIT);
 }

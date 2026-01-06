@@ -19,6 +19,7 @@
         vec3 normal;
         uint blockId;
         bool isRain;
+        bool isHand;
     };
 
     struct RayHitInfo 
@@ -185,10 +186,10 @@
 
     DeferredMaterial unpackMaterialData (ivec2 texel)
     {
-        uvec4 data = uvec4(texelFetch(colortex8, texel, 0).rg, texelFetch(colortex9, texel, 0).rg);
+        uvec3 data = uvec3(texelFetch(colortex8, texel, 0).rg, texelFetch(colortex9, texel, 0).r);
 
         vec4 albedo = unpackUnorm4x8(data.x);
-        vec4 specularData = unpackUnorm4x8(data.y);
+        vec4 specularData = unpack4x6(data.y);
         vec4 normalData = unpackExp4x8(data.z);
 
         DeferredMaterial result;
@@ -203,8 +204,8 @@
 
         applySpecularMap(specularData, result.albedo.rgb, result.F0, result.roughness, result.emission);
 
-        result.blockId = data.w & 65535u;
-        result.isHand = (data.w & 0x80000000u) == 0x80000000u;
+        result.blockId = (data.x >> 24u) | ((data.y & 127u) << 8u);
+        result.isHand = (data.y & 0x00000080u) == 0x00000080u;
 
         return result;
     }
@@ -213,10 +214,9 @@
     {
         uvec4 pack;
 
-        pack.x = packUnorm4x8(vec4(albedo, 0.0));
-        pack.y = packUnorm4x8(specularData);
+        pack.x = packUnorm4x8(vec4(albedo, 0.0)) | ((blockId & 255u) << 24u);
+        pack.y = pack4x6(specularData) | ((blockId >> 8u) & 127u) | (uint(isHand) << 7u);
         pack.z = packExp4x8(vec4(octEncode(geoNormal), octEncode(textureNormal)));
-        pack.w = (blockId & 0x0000ffffu) | (uint(isHand) << 31u);
 
         return pack;
     }
@@ -229,8 +229,9 @@
 
         result.albedo = unpackUnorm4x8(data.x);
         result.normal = octDecode(unpack2x8(data.y >> 16u));
-        result.blockId = data.y & 0x00007fffu;
+        result.blockId = data.y & 0x00003fffu;
         result.isRain = (data.y & 0x00008000u) == 0x00008000u;
+        result.isHand = (data.y & 0x00004000u) == 0x00004000u;
 
         return result;
     }

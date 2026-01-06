@@ -23,20 +23,20 @@
     #define IRCACHE_INV_MARKER uvec2(3154164736u)
 
     /*  
-        const int colortex0Format = RGB16F; // previous frame normal + depth
-        const int colortex1Format = RG32UI; // translucent material data
-        const int colortex2Format = RGBA16F; // tracing output
-        const int colortex3Format = RGBA16F; // diffuse temporal
-        const int colortex4Format = RGBA16F; // reflection temporal
-        const int colortex5Format = RGBA16F; // shadow temporal
-        const int colortex6Format = RGBA16F; // TAA history
-        const int colortex7Format = R11F_G11F_B10F; // scene
-        const int colortex8Format = RG32UI; // material data 0
-        const int colortex9Format = RG32UI; // material data 1
-        const int colortex10Format = RGBA16F; // sun/moon geometry (gbuffers -> deferred), post-processing data (composite)
+        const int colortex0Format =  RGB16F;         // previous frame normal + depth
+        const int colortex1Format =  RG32UI;         // translucent material data
+        const int colortex2Format =  RGBA16F;        // tracing output
+        const int colortex3Format =  RGBA16F;        // diffuse temporal
+        const int colortex4Format =  RGBA16F;        // reflection temporal
+        const int colortex5Format =  RGBA16F;        // shadow temporal
+        const int colortex6Format =  RGBA16F;        // TAA history
+        const int colortex7Format =  R11F_G11F_B10F; // scene
+        const int colortex8Format =  RG32UI;         // material data 0
+        const int colortex9Format =  R32UI;          // material data 1
+        const int colortex10Format = RGBA16F;        // sun/moon geometry (gbuffers -> deferred), post-processing data (composite)
         const int colortex11Format = RGBA16F;
-        const int colortex12Format = RGBA16F; // filtered diffuse lighting
-        const int colortex13Format = R32F; // reflection virtual depth buffer for TAA
+        const int colortex12Format = R11F_G11F_B10F; // filtered diffuse lighting
+        const int colortex13Format = R32F;           // reflection virtual depth buffer for TAA
 
         const int shadowcolor0Format = R8;
         const int shadowcolor1Format = R8;

@@ -14,7 +14,7 @@
 #include "/include/spaceConversion.glsl"
 
 layout (rgba16f) uniform image2D colorimg2;
-layout (local_size_x = 8, local_size_y = 8) in;
+layout (local_size_x = 8, local_size_y = 4) in;
 
 #if TAA_UPSCALING_FACTOR == 100
     const vec2 workGroupsRender = vec2(1.0, 1.0);
@@ -38,12 +38,16 @@ void main ()
 
     DeferredMaterial mat = unpackMaterialData(texel);
 
-    if (dot(mat.geoNormal, shadowDir) > 0.0) {
+    if (dot(mat.geoNormal, shadowDir) > -0.0001) {
         vec2 uv = (vec2(texel) + 0.5) * texelSize;
         
         Ray shadowRay;
-
         shadowRay.origin = screenToPlayerPos(vec3(uv, depth)).xyz + mat.geoNormal * 0.005;
+
+        if (mat.isHand) {
+            shadowRay.origin += 0.5 * playerLookVector;
+        }
+
         vec3 shadowMask = vec3(0.0);
 
         for (int i = 0; i < SHADOW_SAMPLES; i++) {

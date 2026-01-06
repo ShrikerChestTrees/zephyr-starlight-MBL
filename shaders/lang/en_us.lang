@@ -3,14 +3,14 @@ profile.FAST  = §cFast
 
 option.MAIN_TITLE = Zephyr Starlight
 
-value.MAIN_TITLE.0 = §dv0.1.2
-value.MAIN_TITLE.1 = §cv0.1.2
-value.MAIN_TITLE.2 = §6v0.1.2
-value.MAIN_TITLE.3 = §ev0.1.2
-value.MAIN_TITLE.4 = §av0.1.2
-value.MAIN_TITLE.5 = §bv0.1.2
-value.MAIN_TITLE.6 = §9v0.1.2
-value.MAIN_TITLE.7 = §5v0.1.2
+value.MAIN_TITLE.0 = §dv0.1.3
+value.MAIN_TITLE.1 = §cv0.1.3
+value.MAIN_TITLE.2 = §6v0.1.3
+value.MAIN_TITLE.3 = §ev0.1.3
+value.MAIN_TITLE.4 = §av0.1.3
+value.MAIN_TITLE.5 = §bv0.1.3
+value.MAIN_TITLE.6 = §9v0.1.3
+value.MAIN_TITLE.7 = §5v0.1.3
 
 screen.PATH_TRACING    = Path Tracing
 screen.ATMOSPHERICS    = Atmosphere & Lighting
@@ -39,12 +39,16 @@ option.PT_DIFFUSE_ACCUMULATION_LIMIT = Max Accumulated Frames
 option.DIFFUSE_DENOISE_PASSES        = Denoising Passes
 option.SUNLIGHT_GI_QUALITY           = Sunlight GI Quality
 option.MINIMUM_LIGHT                 = Minimum Light
+option.SAMPLING_METHOD               = Sampling Method
+value.SAMPLING_METHOD.0              = Uniform
+value.SAMPLING_METHOD.1              = Cosine Weighted
 
 option.REFLECTION_SAMPLES               = Reflection Samples
 option.REFLECTION_MAX_RT_DISTANCE       = Reflection Trace Distance
 option.PT_REFLECTION_ACCUMULATION_LIMIT = Max Accumulated Frames
 option.REFLECTION_ROUGHNESS_THRESHOLD   = Reflection Roughness Threshold
 option.REFLECTION_BOUNCES               = Reflection Bounces
+option.REFLECTION_PER_PIXEL_SHADOWS     = Per Pixel Shadow Calculation
 
 option.SHADOW_SAMPLES               = Shadow Samples
 option.SHADOW_MAX_RT_DISTANCE       = Shadow Trace Distance
@@ -81,6 +85,7 @@ option.TRIANGLE_ARRAY_SIZE  = Triangle Array Size
 
 option.sunPathRotation      = Sun Path Rotation
 option.SUN_AZIMUTH_ROTATION = Sun Azimuth Rotation
+option.SUN_SIZE             = Sun Size
 
 option.SKY_MIE          = Mie Amount
 option.SKY_OZONE        = Ozone Amount
@@ -89,15 +94,20 @@ option.SKY_RAYLEIGH_G   = Rayleigh Amount (G)
 option.SKY_RAYLEIGH_B   = Rayleigh Amount (B)
 option.NIGHT_BRIGHTNESS = Night Brightness
 
-option.NORMAL_MAPPING      = Normal Mapping
-option.SPECULAR_MAPPING    = Specular Mapping
-option.EMISSION_BRIGHTNESS = Emission Brightness
-option.GLASS_REFLECTANCE   = Glass Reflectance
-option.WATER_ABSORPTION_R  = Water Absorption (R)
-option.WATER_ABSORPTION_G  = Water Absorption (G)
-option.WATER_ABSORPTION_B  = Water Absorption (B)
-option.WATER_REFLECTANCE   = Water Reflectance 
-option.IPBR                = Hardcoded Emission
+option.NORMAL_MAPPING         = Normal Mapping
+option.SPECULAR_MAPPING       = Specular Mapping
+option.GLASS_REFRACTION       = Glass Refraction
+option.WATER_REFRACTION       = Water Refraction
+option.REFRACTION_BOUNCES     = Refraction Bounces
+option.GLASS_IOR              = Index of Refraction
+option.EMISSION_BRIGHTNESS    = Emission Brightness
+option.GLASS_REFLECTANCE      = Glass Reflectance
+option.GLASS_OPACITY          = Glass Opacity
+option.WATER_ABSORPTION_R     = Water Absorption (R)
+option.WATER_ABSORPTION_G     = Water Absorption (G)
+option.WATER_ABSORPTION_B     = Water Absorption (B)
+option.WATER_REFLECTANCE      = Water Reflectance 
+option.IPBR                   = Hardcoded Emission
 
 option.TAA = TAA
 option.TAA_UPSCALING_FACTOR = TAAU Render Scale
